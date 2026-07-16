@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="styles.css" />
+  <title>Ranged Combat Simulator</title>
+  <script type="importmap">
+  {
+    "imports": {}
+  }
+  </script>
+</head>
+<body>
+  <div id="app">
+    <div id="toolbar">
+
+      <button id="downloadImageBtn">Download Image</button>
+      <select id="placePlayer">
+        <option value="comp1">Place: Blue 1</option>
+        <option value="comp2">Place: Red 2</option>
+      </select>
+      <select id="typeSelect">
+        <option value="">Select type to place</option>
+      </select>
+      <button id="clearBtn">Clear</button>
+      <button id="resetBtn" style="display:none">Reset</button>
+      <button id="playBtn" style="display:none">Play</button>
+      <button id="playBatchBtn" style="background:#ffeb3b;border-color:#e6c200;color:#111">Play Batch</button>
+      <!-- Batch name input removed; Play button hidden; Play Batch will always prompt for name -->
+
+      <!-- Speed control aligned to the right -->
+      <div class="speedControl" title="Turn delay (ms)">
+        <div class="speedLabel">Delay: <span id="speedValue">180ms</span></div>
+        <input id="speedSlider" type="range" min="0" max="300" value="180" />
+      </div>
+    </div>
+
+    <div id="main">
+      <div id="gridWrap" aria-hidden="false">
+        <canvas id="grid" width="1000" height="1000"></canvas>
+      </div>
+
+      <aside id="sidebar">
+        <div class="tabBar" role="tablist" aria-label="Sidebar tabs">
+          <button class="tabButton active" data-tab="types" role="tab" aria-selected="true">Types</button>
+          <button class="tabButton" data-tab="units" role="tab" aria-selected="false">Units</button>
+          <button class="tabButton" data-tab="batchdefs" role="tab" aria-selected="false" style="display:none">Batch Defs</button>
+          <button class="tabButton" data-tab="graph" role="tab" aria-selected="false">Graph</button>
+          <button class="tabButton" data-tab="log" role="tab" aria-selected="false">Log</button>
+        </div>
+
+        <div class="tabContent" id="tab-types" role="tabpanel">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <h3 style="margin:0">Unit Types</h3>
+            <button id="createTypeBtn">+ Create Type</button>
+          </div>
+          <div id="typesList"></div>
+        </div>
+
+        <div class="tabContent hidden" id="tab-units" role="tabpanel" aria-hidden="true">
+          <h3 style="margin-top:12px">Units</h3>
+
+          <!-- Selected-unit controls -->
+          <div style="display:flex;gap:6px;margin:8px 0 6px 0;flex-wrap:wrap">
+            <button id="moveLeftBtn" title="Move selected left 20">⬅</button>
+            <button id="moveRightBtn" title="Move selected right 20">➡</button>
+            <button id="moveUpBtn" title="Move selected up 20">⬆</button>
+            <button id="moveDownBtn" title="Move selected down 20">⬇</button>
+            <button id="flipXSelectedBtn" title="Flip X of selected">↔</button>
+            <button id="flipYSelectedBtn" title="Flip Y of selected">↕</button>
+            <button id="centerYBtn" title="Center selected on Y axis">=</button>
+            <button id="centerXBtn" title="Center selected on X axis">∥</button>
+          </div>
+
+          <div id="unitsList"></div>
+
+          <!-- Import section for Units -->
+          <div style="margin-top:12px;border-top:1px dashed #eee;padding-top:10px;">
+            <h4 style="margin:6px 0 8px 0;font-size:14px">Import Units</h4>
+
+            <!-- Comp1 Import -->
+            <div style="margin-bottom:10px;">
+              <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
+                <strong style="font-size:13px">Import Blue 1</strong>
+                <select id="comp1TypeSelectImport" style="flex:1;padding:6px;border:1px solid #ddd;border-radius:6px;background:white"></select>
+              </div>
+              <textarea id="comp1Coords" placeholder="Enter coordinates or optional unit name header. Examples:
+1,2 2,3 4,5
+(1-2) (2-5)
+Archer
+1,2 4,5 6,7" style="width:100%;height:80px;font-family:monospace;padding:8px;border:1px solid #eee;border-radius:6px;resize:none"></textarea>
+              <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px">
+                <button id="comp1AddBtn">Add</button>
+                <button id="comp1ImportBtn">Import</button>
+                <button id="comp1FlipXBtn" title="Flip V axis">Flip V</button>
+                <button id="comp1FlipYBtn" title="Flip H axis">Flip H</button>
+              </div>
+            </div>
+
+            <!-- Comp2 Import -->
+            <div>
+              <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
+                <strong style="font-size:13px">Import Red 2</strong>
+                <select id="comp2TypeSelectImport" style="flex:1;padding:6px;border:1px solid #ddd;border-radius:6px;background:white"></select>
+              </div>
+              <textarea id="comp2Coords" placeholder="Enter coordinates or optional unit name header. Examples:
+1,2 2,3 4,5
+(1-2) (2-5)
+Archer
+1,2 4,5 6,7" style="width:100%;height:80px;font-family:monospace;padding:8px;border:1px solid #eee;border-radius:6px;resize:none"></textarea>
+              <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px">
+                <button id="comp2AddBtn">Add</button>
+                <button id="comp2ImportBtn">Import</button>
+                <button id="comp2FlipXBtn" title="Flip V axis">Flip V</button>
+                <button id="comp2FlipYBtn" title="Flip H axis">Flip H</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tabContent hidden" id="tab-log" role="tabpanel" aria-hidden="true">
+          <h3 style="margin-top:12px">Log (CSV)</h3>
+          <textarea id="logArea" readonly style="width:100%;height:100%;min-height:200px;font-family:monospace;font-size:13px;padding:8px;border:1px solid #eee;border-radius:6px;resize:none;overflow:auto"></textarea>
+          <div style="display:flex;gap:8px;margin-top:8px;justify-content:flex-end">
+            <button id="downloadCsvBtn">Download CSV</button>
+            <button id="resetCsvBtn">Reset CSV</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Create Type Modal -->
+    <div id="modal" class="hidden" role="dialog" aria-modal="true">
+      <form id="typeForm">
+        <h2>Create Unit Type</h2>
+        <label> Name <input name="name" required /></label>
+        <label> Health <input name="health" type="number" min="1" step="1" value="100" required/></label>
+        <label> Range <input name="range" type="number" min="0" step="1" value="100" required/></label>
+        <label> Power <input name="power" type="number" min="0" step="1" value="10" required/></label>
+        <label> Attacks <input name="attacks" type="number" min="1" step="1" value="1" required/></label>
+        <label> Accuracy <input name="accuracy" type="number" min="0" max="100" step="1" value="100" required/></label>
+        <label> Dodge <input name="dodge" type="number" min="0" max="100" step="1" value="0" required/></label>
+        <label> Armor <input name="armor" type="number" min="0" step="1" value="0" required/></label>
+        <label> Speed <input name="speed" type="number" min="0" step="1" value="50" required/></label>
+        <label> Symbol
+          <select name="symbol">
+            <option value="●">●</option><option value="○">○</option><option value="◆">◆</option><option value="◇">◇</option><option value="■">■</option><option value="□">□</option><option value="▲">▲</option><option value="△">△</option><option value="▼">▼</option><option value="▽">▽</option>
+            <option value="▶">▶</option><option value="▷">▷</option><option value="◀">◀</option><option value="◁">◁</option><option value="★">★</option><option value="☆">☆</option><option value="✦">✦</option><option value="✶">✶</option><option value="✷">✷</option><option value="✸">✸</option>
+            <option value="✹">✹</option><option value="✺">✺</option><option value="✻">✻</option><option value="✼">✼</option><option value="✽">✽</option><option value="✾">✾</option><option value="✿">✿</option><option value="❀">❀</option><option value="❁">❁</option><option value="❂">❂</option>
+            <option value="✚">✚</option><option value="✖">✖</option><option value="✝">✝</option><option value="✞">✞</option><option value="✟">✟</option><option value="✠">✠</option><option value="✡">✡</option><option value="☼">☼</option><option value="☾">☾</option><option value="☀">☀</option>
+            <option value="♠">♠</option><option value="♣">♣</option><option value="♥">♥</option><option value="♦">♦</option><option value="♪">♪</option><option value="♫">♫</option><option value="✈">✈</option><option value="✉">✉</option><option value="☎">☎</option><option value="⚑">⚑</option>
+            <option value="⚐">⚐</option><option value="☑">☑</option><option value="☒">☒</option><option value="✔">✔</option><option value="✖">✖</option><option value="➤">➤</option><option value="➜">➜</option><option value="➔">➔</option><option value="➝">➝</option><option value="➞">➞</option>
+            <option value="→">→</option><option value="←">←</option><option value="↑">↑</option><option value="↓">↓</option><option value="↔">↔</option><option value="↕">↕</option><option value="↖">↖</option><option value="↗">↗</option><option value="↘">↘</option><option value="↙">↙</option>
+            <option value="✪">✪</option><option value="✩">✩</option><option value="✫">✫</option><option value="✬">✬</option><option value="✭">✭</option><option value="✮">✮</option><option value="✯">✯</option><option value="✰">✰</option><option value="✱">✱</option><option value="✲">✲</option>
+          </select>
+        </label>
+
+        <label> Tactic
+          <select name="tactic">
+            <option value="closest">Target Closest</option>
+            <option value="damaged">Target Damaged</option>
+          </select>
+        </label>
+        <div class="modalActions">
+          <button type="submit">Create</button>
+          <button id="cancelModal" type="button">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
