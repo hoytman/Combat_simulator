@@ -1,0 +1,6 @@
+2026-07-16 19:35 - Reversed revision log order so most recent entries appear first.
+2026-07-16 19:30 - Formatted revision popup with bold dates and spacing between entries.
+2026-07-16 19:25 - Fixed rev popup bug: incorrect await placement prevented fetched text from resolving.
+2026-07-16 19:20 - Added no-cache meta tags and nginx cache-control headers to force fresh reloads.
+2026-07-16 19:15 - Widened right sidebar from 280px to 450px.
+2026-07-16 19:10 - Added revision log button and popup to display change history.

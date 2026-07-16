@@ -21,6 +21,23 @@ const clearBtn = document.getElementById('clearBtn');
 const resetBtn = document.getElementById('resetBtn');
 const logEl = document.getElementById('logArea'); // now a textarea for CSV
 
+// Revision log popup
+document.getElementById('revBtn')?.addEventListener('click', async ()=>{
+  try {
+    const res = await fetch('rev_log.txt');
+    const text = res.ok ? await res.text() : 'Could not load revision log.';
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.35);z-index:10000';
+    overlay.innerHTML = `<div style="background:#fff;padding:16px;border-radius:8px;max-width:600px;width:90%;max-height:80vh;overflow:auto;box-shadow:0 6px 18px rgba(0,0,0,.18);display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center"><h3 style="margin:0">Revision Log</h3><button id="revCloseBtn" style="padding:4px 10px;border:1px solid #ddd;background:#fff;border-radius:6px;cursor:pointer">Close</button></div>
+      <div style="font-size:13px;font-family:monospace">${text.trim().split('\n').filter(l=>l.trim()).map(l => { const m = l.match(/^(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2})\s*-\s*(.*)/); return m ? '<p style="margin:0 0 12px 0"><b>'+m[1]+'</b> - '+m[2].replace(/</g,'&lt;')+'</p>' : '<p style="margin:0 0 12px 0">'+l.replace(/</g,'&lt;')+'</p>'; }).join('')}</div>
+    </div>`;
+    document.body.appendChild(overlay);
+    overlay.querySelector('#revCloseBtn').addEventListener('click', ()=> overlay.remove());
+    overlay.addEventListener('click', (e)=>{ if(e.target === overlay) overlay.remove(); });
+  } catch(e){ alert('Failed to load revision log.'); }
+});
+
 // When the placePlayer dropdown changes, if there are selected units convert their owner to the chosen owner,
 // then recalculate placement numbers by unit age and refresh UI/draw.
 if(placePlayer){
