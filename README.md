@@ -59,3 +59,7 @@ Then open [http://localhost:8000](http://localhost:8000).
 - `app.js` — All application logic
 - `styles.css` — Styling
 - `Dockerfile` — Nginx container for serving the app
+
+## License
+
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
